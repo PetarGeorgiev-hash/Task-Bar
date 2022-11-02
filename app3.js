@@ -1,6 +1,12 @@
 var snippet = this;
 debugger;
 let snippetProjectionRecordUuid = "";
+let snippetColumnProjectionUuid = "";
+
+if (typeof snippet.ColumnProjection !== "undefined") {
+    snippetColumnProjectionUuid = snippet.ColumnProjection[0].recordUuid;
+}
+
 if (typeof snippet.Proj !== "undefined") {
     // snippet.Projection is the added field in the snippet form from d)
     snippetProjectionRecordUuid = snippet.Proj[0].recordUuid;
@@ -10,6 +16,19 @@ if (typeof snippet.Proj !== "undefined") {
 let projectionSnippet = snippet.velocity.getSnippet(
     snippetProjectionRecordUuid
 );
+
+let ColumnProjectionSnippet = snippet.velocity.getSnippet(
+    snippetColumnProjectionUuid
+);
+
+ColumnProjectionSnippet.addEventListener("onReady", function (event) {
+    debugger;
+    let source = event.sourceElement;
+    let projection = source.projection;
+    let entityObjName = projection.manifest.projectionObjectName;
+    let projectionData = projection.data[entityObjName];
+    const columns = taskBoardPG.columns(projection);
+});
 // waiting for projection to be done shaping data from query
 projectionSnippet.addEventListener("onReady", function (event) {
     let source = event.sourceElement;
@@ -17,7 +36,6 @@ projectionSnippet.addEventListener("onReady", function (event) {
     let entityObjName = projection.manifest.projectionObjectName;
     let projectionData = projection.data[entityObjName];
 
-    const columns = taskBoardPG.columns(projection);
     const project = taskBoardPG.project(projection);
     console.log(columns, project);
     console.log(snippet.domRef);
@@ -65,7 +83,7 @@ if (typeof window.taskBoardPG == "undefined") {
             let columnsObj = {};
             const responseObj = response.manifest.projectionObjectName;
             response.data[responseObj].forEach((record) => {
-                record.fields[snippet.Stage].forEach((el) => {
+                record.fields[responseObj].forEach((el) => {
                     if (el.name in columnsObj) {
                     } else {
                         columnsObj[el.name] = {

@@ -5,7 +5,6 @@ this.addEventListener("onAfterRender", () => {
         appendTo: taskBoardDiv,
 
         // Url for resource avatar images
-        resourceImagePath: "../_shared/images/users/",
 
         // Experimental, transition moving cards using the editor
         useDomTransition: true,
