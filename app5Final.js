@@ -79,6 +79,8 @@ if (typeof window.taskBoardPG == "undefined") {
                 });
                 obj.record = record;
 
+                obj.baseObjectName = response.manifest.baseEntity;
+
                 obj.description = record.fields[snippet.Note];
 
                 idCount++;
