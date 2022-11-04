@@ -8,7 +8,6 @@ if (typeof snippet.ColumnProjection !== "undefined") {
 }
 
 if (typeof snippet.Proj !== "undefined") {
-    // snippet.Projection is the added field in the snippet form from d)
     snippetProjectionRecordUuid = snippet.Proj[0].recordUuid;
 }
 
@@ -32,8 +31,6 @@ const globalColumns = new Promise((resolve) => {
     });
 });
 
-// waiting for projection to be done shaping data from query
-
 const globalTasks = new Promise((resolve) => {
     projectionSnippet.addEventListener("onReady", function (event) {
         let source = event.sourceElement;
@@ -48,7 +45,7 @@ const globalTasks = new Promise((resolve) => {
 Promise.all([globalColumns, globalTasks]).then((values) => {
     const columns = values[0];
     const project = values[1];
-    const taskBoard = new bryntum.taskboard.TaskBoard({
+    new bryntum.taskboard.TaskBoard({
         appendTo: snippet.domRef,
 
         columns,
@@ -56,6 +53,12 @@ Promise.all([globalColumns, globalTasks]).then((values) => {
         columnField: `status`,
 
         project,
+
+        listeners: {
+            taskDrop(e) {
+                snippet.fireEvent("onTaskDrop", e);
+            },
+        },
     });
 });
 
@@ -74,11 +77,12 @@ if (typeof window.taskBoardPG == "undefined") {
                 record.fields[snippet.Stage].forEach((el) => {
                     obj.status = el.name;
                 });
+                obj.record = record;
 
                 obj.description = record.fields[snippet.Note];
 
                 idCount++;
-
+                console.log(obj);
                 tasks.push(obj);
             });
 
