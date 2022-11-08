@@ -48,6 +48,13 @@ Promise.all([globalColumns, globalTasks]).then((values) => {
     new bryntum.taskboard.TaskBoard({
         appendTo: snippet.domRef,
 
+        useDomTransition: true,
+        stickyHeaders: true,
+
+        footerItems: {
+            id: { type: "text", editor: null },
+        },
+
         columns,
 
         columnField: `status`,
@@ -55,8 +62,87 @@ Promise.all([globalColumns, globalTasks]).then((values) => {
         project,
 
         listeners: {
-            taskDrop(e) {
+            async beforeTaskDrop(e) {
                 snippet.fireEvent("onTaskDrop", e);
+
+                snippet.addEventListener("onTaskDrop", function (e) {
+                    console.log("taskDropEvent", e);
+
+                    let recordsWithAllRequest = [];
+                    const newStage = e.miscProperties.targetColumn.data.id;
+                    const recordsArr = e.miscProperties.taskRecords;
+                    function newRecordFunc(record, oldStage, newStage) {
+                        const stringObj = JSON.stringify(record);
+                        const replacedString = stringObj.replaceAll(
+                            oldStage,
+                            newStage
+                        );
+                        return JSON.parse(replacedString);
+                    }
+                    recordsArr.forEach((record) => {
+                        const stagePath =
+                            record.data.record.fields[snippet.Stage];
+                        const oldStage = stagePath[0].name;
+                        const baseObjectName = record.data.baseObjectName;
+                        const newRecord = newRecordFunc(
+                            record.record,
+                            oldStage,
+                            newStage
+                        );
+                        console.log(newRecord);
+                        const recordUuid = record.data.record.uuid;
+
+                        let requestObj = {};
+                        for (key in newRecord.fields) {
+                            const indexOfDot = key.indexOf(".");
+                            const newKey = key.slice(indexOfDot + 1);
+                            requestObj.Stage = [
+                                newRecord.fields[`${baseObjectName}.Stage`][0]
+                                    .id,
+                            ];
+                            console.log(baseObjectName);
+                        }
+                        networkManager
+                            .patch(
+                                `/api/v2/command/${baseObjectName}/${recordUuid}`,
+                                requestObj
+                            )
+                            .then((res) => {
+                                snippet.fireEvent("onError", res);
+                            })
+                            .catch((error) => {
+                                snippet.fireEvent("onError", error);
+                            });
+                    });
+                });
+
+                const promise = new Promise((resolve) => {
+                    snippet.addEventListener("onError", function (e) {
+                        debugger;
+                        if (e.miscProperties.statusCode == 400) {
+                            resolve(false);
+                        } else {
+                            resolve(true);
+                        }
+                    });
+                });
+                let final;
+                await promise.then((nz) => (final = nz));
+                if (final === false) {
+                    window.alert(`Error! - Entitie not editable`);
+                }
+                return final;
+            },
+            taskClick(e) {
+                const domEl = e.event.target;
+                //e.taskRecord.data.record.uuid
+                if (domEl.dataset.field == "name") {
+                    console.log(e);
+                    snippet.fireEvent(
+                        "onTextClick",
+                        e.taskRecord.data.record.fields["WorkOrders.ID"]
+                    );
+                }
             },
         },
     });
