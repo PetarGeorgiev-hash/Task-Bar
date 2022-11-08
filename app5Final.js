@@ -134,6 +134,7 @@ Promise.all([globalColumns, globalTasks]).then((values) => {
                 return final;
             },
             taskClick(e) {
+                console.log(e);
                 const domEl = e.event.target;
                 //e.taskRecord.data.record.uuid
                 if (domEl.dataset.field == "name") {
