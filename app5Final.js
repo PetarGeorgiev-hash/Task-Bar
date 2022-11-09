@@ -63,10 +63,8 @@ Promise.all([globalColumns, globalTasks]).then((values) => {
 
         listeners: {
             async beforeTaskDrop(e) {
-                snippet.fireEvent("onTaskDrop", e);
-
                 snippet.addEventListener("onTaskDrop", function (e) {
-                    console.log("taskDropEvent", e);
+                    debugger;
 
                     let recordsWithAllRequest = [];
                     const newStage = e.miscProperties.targetColumn.data.id;
@@ -89,7 +87,7 @@ Promise.all([globalColumns, globalTasks]).then((values) => {
                             oldStage,
                             newStage
                         );
-                        console.log(newRecord);
+
                         const recordUuid = record.data.record.uuid;
 
                         let requestObj = {};
@@ -100,7 +98,6 @@ Promise.all([globalColumns, globalTasks]).then((values) => {
                                 newRecord.fields[`${baseObjectName}.Stage`][0]
                                     .id,
                             ];
-                            console.log(baseObjectName);
                         }
                         networkManager
                             .patch(
@@ -115,6 +112,8 @@ Promise.all([globalColumns, globalTasks]).then((values) => {
                             });
                     });
                 });
+
+                snippet.fireEvent("onTaskDrop", e);
 
                 const promise = new Promise((resolve) => {
                     snippet.addEventListener("onError", function (e) {
@@ -134,11 +133,9 @@ Promise.all([globalColumns, globalTasks]).then((values) => {
                 return final;
             },
             taskClick(e) {
-                console.log(e);
                 const domEl = e.event.target;
                 //e.taskRecord.data.record.uuid
                 if (domEl.dataset.field == "name") {
-                    console.log(e);
                     snippet.fireEvent(
                         "onTextClick",
                         e.taskRecord.data.record.fields["WorkOrders.ID"]
@@ -171,7 +168,6 @@ if (typeof window.taskBoardPG == "undefined") {
                 obj.description = record.fields[snippet.Note];
 
                 idCount++;
-                console.log(obj);
                 tasks.push(obj);
             });
 
