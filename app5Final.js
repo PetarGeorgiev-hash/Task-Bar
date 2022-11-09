@@ -128,7 +128,6 @@ Promise.all([globalColumns, globalTasks]).then((values) => {
                 let final;
                 await promise.then((nz) => (final = nz));
                 if (final === false) {
-                    window.alert(`Error! - Entitie not editable`);
                 }
                 return final;
             },
